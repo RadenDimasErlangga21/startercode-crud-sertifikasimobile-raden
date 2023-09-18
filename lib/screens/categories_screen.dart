@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api, use_key_in_widget_constructors, prefer_const_constructors
+// ignore_for_file: library_private_types_in_public_api, use_key_in_widget_constructors, prefer_const_constructors, prefer_final_fields, non_constant_identifier_names, avoid_print
 
 import 'package:crud_sederhana_raden/helpers/drawer_navigation.dart';
 import 'package:crud_sederhana_raden/models/category.dart';
@@ -32,10 +32,11 @@ class _CategoriesScreenState extends State<CategoriesScreen>{
           ),
 
           TextButton(
-          onPressed: (){
+          onPressed: () async{
             _category.name = _categoryNameController.text;
             _category.description = _categoryDescriptionController.text;
-            _categoryService.saveCategory(_category);
+            var result = await _categoryService.saveCategory(_category);
+            print(result);
 
           },
           style: TextButton.styleFrom(
