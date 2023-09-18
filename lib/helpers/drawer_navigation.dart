@@ -26,11 +26,13 @@ class _DrawerNavigationState extends State<DrawerNavigation> {
               accountEmail: Text('Zirkified123@gmail.com'),
               decoration: BoxDecoration(color: Colors.blue),
             ),
+
             ListTile(
               leading: Icon(Icons.home),
               title: Text('Home'),
               onTap: ()=>Navigator.of(context).push(MaterialPageRoute(builder: (context)=>HomeScreen())),
             ),
+            
               ListTile(
               leading: Icon(Icons.home),
               title: Text('Kategori'),
