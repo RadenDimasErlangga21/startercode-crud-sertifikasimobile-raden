@@ -18,8 +18,19 @@ class Repository {
     return _database;
   }
 
-  insertData(table, data) async {
+  // createdata
+  Future<int?> insertData(table, data) async {
     var connection = await database;
     return await connection?.insert(table, data);
   }
+
+  Future<List<Map<String, dynamic>>?> readData(table) async {
+    var connection = await database;
+    return await connection?.query(table);
+  }
+
+readDataById(table, itemId) async {
+  var connection = await database;
+  return await connection?.query(table, where: 'id = ?', whereArgs: [itemId]);
+}
 }
