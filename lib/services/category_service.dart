@@ -20,7 +20,17 @@ class CategoryService {
   }
 
   //Membaca data dari id
-  readCategoryById(categoryId) async{
+  readCategoryById(categoryId) async {
     return await _repository.readDataById('categories', categoryId);
+  }
+
+  //update data dari id
+  updateCategory(Category category) async {
+    return await _repository.updateData('categories', category.categoryMap());
+  }
+
+// Delete data by id
+  deleteCategory(int categoryId) async {
+    return await _repository.deleteData('categories', categoryId);
   }
 }

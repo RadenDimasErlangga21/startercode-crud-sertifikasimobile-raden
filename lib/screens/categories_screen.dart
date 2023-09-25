@@ -35,51 +35,50 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     getAllCategories();
   }
 
-  getAllCategories() async {
-    try {
-      var categories = await _categoryService.readCategories();
+getAllCategories() async {
+  try {
+    var categories = await _categoryService.readCategories();
 
-      if (categories != null) {
-        categories.forEach((category) {
-          setState(() {
-            var categoryModel = Category();
-            categoryModel.name = category['name'];
-            categoryModel.description = category['description'];
-            print(
-                'Category ID: ${category['id']}'); // Add this line to check the ID
-            _categoryList.add(categoryModel);
-          });
-        });
-      } else {
-        print("Tidak ada kategori ditemukan");
-      }
-    } catch (e) {
-      print("Kesalahan saat mengambil kategori: $e");
-    }
-  }
-
-_editCategory(BuildContext context, int? categoryId) async {
-  if (categoryId = null) {
-    category = await _categoryService.readCategoryById(categoryId);
-    if (category != null && category.isNotEmpty) {
+    if (categories != null) {
       setState(() {
-        _editCategoryNameController.text = category[0]['name'] ?? 'No Name';
-        _editCategoryDescriptionController.text =
-            category[0]['description'] ?? 'No Description';
+        _categoryList.clear(); // Clear the current list
+        for (var category in categories) {
+          var categoryModel = Category();
+          categoryModel.id = category['id'];
+          categoryModel.name = category['name'];
+          categoryModel.description = category['description'];
+          _categoryList.add(categoryModel);
+        }
       });
-      _EditFormDialog(context);
     } else {
-      // Handle the case where the category is not found or an error occurs.
-      print('Category not found for id: $categoryId');
-      // Optionally, display an error message or take appropriate action.
+      print("Tidak ada kategori ditemukan");
     }
-  } else {
-    // Handle the case where categoryId is null or invalid
-    print('Invalid categoryId: $categoryId');
-    // Optionally, display an error message or take appropriate action
+  } catch (e) {
+    print("Kesalahan saat mengambil kategori: $e");
   }
 }
 
+  _editCategory(BuildContext context, int? categoryId) async {
+    if (categoryId != null) {
+      category = await _categoryService.readCategoryById(categoryId);
+      if (category != null && category.isNotEmpty) {
+        setState(() {
+          _editCategoryNameController.text = category[0]['name'] ?? 'No Name';
+          _editCategoryDescriptionController.text =
+              category[0]['description'] ?? 'No Description';
+        });
+        _EditFormDialog(context);
+      } else {
+        // Handle the case where the category is not found or an error occurs.
+        print('Category not found for id: $categoryId');
+        // Optionally, display an error message or take appropriate action.
+      }
+    } else {
+      // Handle the case where categoryId is null or invalid
+      print('Invalid categoryId: $categoryId');
+      // Optionally, display an error message or take appropriate action
+    }
+  }
 
   // Method untuk menampilkan dialog form tambah kategori
   _ShowFormDialog(BuildContext context) {
@@ -149,7 +148,6 @@ _editCategory(BuildContext context, int? categoryId) async {
     );
   }
 
-  // Method untuk menampilkan dialog form tambah kategori
   _EditFormDialog(BuildContext context) {
     return showDialog(
       context: context,
@@ -167,18 +165,28 @@ _editCategory(BuildContext context, int? categoryId) async {
             TextButton(
               onPressed: () async {
                 // Mengambil data dari input teks
-                _category.name = _categoryNameController.text;
-                _category.description = _categoryDescriptionController.text;
+                _category.id = category[0]['id'];
+                _category.name = _editCategoryNameController.text;
+                _category.description = _editCategoryDescriptionController.text;
+
                 // Memanggil service untuk menyimpan kategori
-                var result = await _categoryService.saveCategory(_category);
+                var result = await _categoryService.updateCategory(_category);
                 print(result);
 
                 // Menutup dialog form saat data berhasil disimpan
                 Navigator.pop(context);
 
-                // Menambahkan data ke daftar kategori
+                // Update the _categoryList with the edited data
                 setState(() {
-                  _categoryList.add(_category);
+                  // Find the index of the category being updated
+                  int index =
+                      _categoryList.indexWhere((cat) => cat.id == _category.id);
+
+                  // Update the category in the _categoryList
+                  if (index != -1) {
+                    _categoryList[index].name = _category.name;
+                    _categoryList[index].description = _category.description;
+                  }
                 });
               },
               //update
@@ -214,6 +222,37 @@ _editCategory(BuildContext context, int? categoryId) async {
     );
   }
 
+  _deleteFormDialog(BuildContext context, int categoryId) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (param) {
+        return AlertDialog(
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(foregroundColor: Colors.blueAccent),
+              child: Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () async {
+                var result = await _categoryService.deleteCategory(categoryId);
+                print(result);
+                if (result > 0) {
+                  Navigator.pop(context);
+                  getAllCategories();
+                }
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: Text('Hapus'),
+            ),
+          ],
+          title: Text('Apakah anda ingin menghapus data?'),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -234,6 +273,7 @@ _editCategory(BuildContext context, int? categoryId) async {
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
+                    //Edit
                     IconButton(
                       icon: Icon(
                         Icons.edit,
@@ -243,12 +283,18 @@ _editCategory(BuildContext context, int? categoryId) async {
                         _editCategory(context, _categoryList[index].id);
                       },
                     ),
+
+                    //Delete
                     IconButton(
                       icon: Icon(
                         Icons.delete,
                         color: Colors.red,
                       ),
-                      onPressed: () {},
+                      onPressed: () {
+                        int categoryId = _categoryList[index].id ??
+                            0; // Make sure _categoryList[index].id is of type int
+                        _deleteFormDialog(context, categoryId);
+                      },
                     ),
                   ],
                 ),
