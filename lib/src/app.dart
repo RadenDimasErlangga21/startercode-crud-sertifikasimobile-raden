@@ -1,5 +1,5 @@
+import 'package:crud_sederhana_raden/screens/login.dart';
 import 'package:flutter/material.dart';
-import '../screens/home_screen.dart';
 
 class App extends StatelessWidget {
   @override
@@ -7,7 +7,7 @@ class App extends StatelessWidget {
   Widget build (BuildContext context){
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomeScreen(),
+      home: Login(),
     );
   }
 }
